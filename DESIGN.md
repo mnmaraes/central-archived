@@ -2,16 +2,20 @@
 
 ## Project
 
+[Next Session](#session-2)
+
 *TODOs*:
-- [ ] Create Projects
-  - [ ] Store Projects
-  - [ ] List Stored Projects
+- [x] Create Projects
+- [ ] Store Projects
+- [ ] List Stored Projects
 - [ ] Add Tasks to existing projects
 - [ ] Follow Project Progress
 
 ### Development
 
-#### Create Projects
+#### Session 1 [Nov 15, 2019]
+
+##### Create Projects
 
 A project needs (on a high level):
 - A name
@@ -39,6 +43,26 @@ We can also store `.csv`s on Github so we'll keep our data safe and decentralize
 
 Again, let's do this right.
 We should define storage traits as well, so we can replace it in the future
+
+It seems like the way to do this is with `csv` + `serde`.
+Both have been added to our project and should be accessible through the `cargo doc --open` command
+
+So next thing todo:
+
+1. [ ] Define and implement our storage engine
+
+#### Session 2
+
+*Context*
+
+1. [ ] Define and implement our storage engine
+1. [ ] Implement PM module's functionality
+    - [ ] Store Projects
+    - [ ] List Stored Projects
+    - [ ] Add Tasks to existing projects
+    - [ ] Follow Project Progress
+1. [ ] Define CLI module's traits
+1. [ ] Implement CLI traits on PM Structs
 
 ## CLI
 
