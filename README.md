@@ -15,5 +15,8 @@ Well, I wanted to learn rust. So let's build a thing!
   - [ ] Add Tasks to Projects
   - [ ] See Project Status
 
+*Backlog*:
+- [ ] Rituals
+
 *Long Term*:
 - [ ] Take over the world!

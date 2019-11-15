@@ -1,5 +1,6 @@
+mod cli;
 mod project;
 
 fn main() {
-    println!("Hello, world!");
+    cli::get_cli_matches();
 }
