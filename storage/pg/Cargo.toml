@@ -1,0 +1,9 @@
+[package]
+name = "pg"
+version = "0.1.0"
+authors = ["Murillo Nicacio <mnmaraes@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+diesel ={ version = "1.4.3", features = ["postgres"] }
+dotenv = "0.15.0"

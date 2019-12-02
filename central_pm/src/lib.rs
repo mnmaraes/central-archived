@@ -1,4 +1,6 @@
-struct Project {
+pub struct Project {
+    id: i32,
+
     name: String,
     description: String,
 }
@@ -10,6 +12,7 @@ mod tests {
     #[test]
     fn can_create_project_test() {
         let project = Project {
+            id: 1,
             name: String::from("Project"),
             description: String::from("A sample project"),
         };

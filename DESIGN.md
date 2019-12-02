@@ -53,8 +53,17 @@ So next thing todo:
 
 #### Session 2
 
+In a proper Murillo fashion, I'm rethinking the storage decision mid implementation.
+`csv` is a limited format for what we're doing.
+Why not use a proper database? 
+Doesn't have to be something large scale or scalable or super duper.
+It just has to work and be somewhat portable.
+It seems to me that Postgres fits all of that.
+So why not just go with it?
+
 *Context*
 
+1. [x] Add Clippy to your project
 1. [ ] Define and implement our storage engine
 1. [ ] Implement PM module's functionality
     - [ ] Store Projects
@@ -63,6 +72,7 @@ So next thing todo:
     - [ ] Follow Project Progress
 1. [ ] Define CLI module's traits
 1. [ ] Implement CLI traits on PM Structs
+
 
 ## CLI
 
