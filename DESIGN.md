@@ -58,8 +58,14 @@ In a proper Murillo fashion, I'm rethinking the storage decision mid implementat
 Why not use a proper database? 
 Doesn't have to be something large scale or scalable or super duper.
 It just has to work and be somewhat portable.
-It seems to me that Postgres fits all of that.
+It seems to me that SQLLite fits all of that.
 So why not just go with it?
+
+Well, if we're going to be messing around with SQL, let's just go for big papa Postgres
+
+Next thing is Diesel doesn't support async stuff.
+I don't **need** async stuff, but I **want** async stuff.
+Moving away from `Diesel` and towards `tokio_postgres`
 
 *Context*
 

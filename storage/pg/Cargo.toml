@@ -5,5 +5,6 @@ authors = ["Murillo Nicacio <mnmaraes@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-diesel ={ version = "1.4.3", features = ["postgres"] }
+tokio = "0.2.2"
+tokio-postgres = "0.5.0-alpha.2"
 dotenv = "0.15.0"
