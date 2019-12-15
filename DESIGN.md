@@ -67,17 +67,26 @@ Next thing is Diesel doesn't support async stuff.
 I don't **need** async stuff, but I **want** async stuff.
 Moving away from `Diesel` and towards `tokio_postgres`
 
-*Context*
+#### Unnumbered Session
 
-1. [x] Add Clippy to your project
-1. [ ] Define and implement our storage engine
-1. [ ] Implement PM module's functionality
-    - [ ] Store Projects
-    - [ ] List Stored Projects
-    - [ ] Add Tasks to existing projects
-    - [ ] Follow Project Progress
-1. [ ] Define CLI module's traits
-1. [ ] Implement CLI traits on PM Structs
+Problem 3 (or 0): Rearchitecting Central.
+The modular architecture for the code just wasn't cutting it.
+It's not just the code that needs to be decentralized.
+The whole functioning of the system needs to be distributed across different processes.
+
+This makes things fun, as I'll get to do some IPC.
+Given the event driven architecture I have in mind, 
+it seems that sockets would be the right way to communicate between processes.
+Also thought about shared memory,
+and although it really wouldn't work for events 
+(because of its passive read/write nature),
+we might still use it for managed models in the future.
+
+Still need to play around with both,
+to make sure I can build a robust framework on top of rust primitives.
+Clearing the [context](#dec-15th) due to the arch redo.
+
+*Context*
 
 
 ## CLI
@@ -91,3 +100,19 @@ NOTE: Holy shit! Rust lifetimes are magic...
 They really, really just work (tm).
 And here I was thinking they'd be super hard to reason around, or very complex to use...
 Nope!
+
+## Archived Contexts
+
+### Dec 15th
+
+*Context:*
+
+1. [x] Add Clippy to your project
+1. [ ] Define and implement our storage engine
+1. [ ] Implement PM module's functionality
+    - [ ] Store Projects
+    - [ ] List Stored Projects
+    - [ ] Add Tasks to existing projects
+    - [ ] Follow Project Progress
+1. [ ] Define CLI module's traits
+1. [ ] Implement CLI traits on PM Structs

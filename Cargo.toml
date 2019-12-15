@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "central_station",
   "central_cli",
   "central_pm",
   "storage/pg",
