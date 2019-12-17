@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 tokio = { version = "0.2.4", features = ["full"] }
-shared_memory = "0.10.0"
+bytes = "0.5.3"
