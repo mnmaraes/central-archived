@@ -1,32 +1,16 @@
 mod cli;
+mod modules;
 
-use std::error::Error;
+use modules::Connect;
 
-use tokio::prelude::*;
+//use std::error::Error;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+//use tokio::prelude::*;
+
+fn main() {
     let matches = cli::get_cli_matches();
 
-    match matches.subcommand() {
-        ("connect", Some(conn_matches)) => {
-            if conn_matches.is_present("interactive") {
-                run_interactive_connect().await;
-                return;
-            }
-
-            run_connect(conn_matches.value_of("message").unwrap()).await;
-        }
-        _ => {
-            println!("Nothing matched");
-        }
+    if let Some(runner) = Connect::matches(matches) {
+        runner.run()
     }
-}
-
-async fn run_interactive_connect() -> Result<(), Box<dyn Error>> {
-    Ok(())
-}
-
-async fn run_connect(message: &str) -> Result<(), Box<dyn Error>> {
-    Ok(())
 }
