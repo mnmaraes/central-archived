@@ -8,5 +8,6 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.0"
+tokio = { version = "0.2.4", features = ["full"] }
 central_pm = { path = "../central_pm" }
 pg = { path = "../storage/pg" }

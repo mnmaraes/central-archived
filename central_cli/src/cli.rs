@@ -1,5 +1,5 @@
 extern crate clap;
-use clap::{crate_authors, crate_version, App, ArgMatches};
+use clap::{crate_authors, crate_version, App, Arg, ArgMatches, SubCommand};
 
 pub fn get_cli_matches<'a>() -> ArgMatches<'a> {
     let app = generate_app();
@@ -9,12 +9,34 @@ pub fn get_cli_matches<'a>() -> ArgMatches<'a> {
 
 #[allow(deprecated)]
 fn generate_app<'a, 'b>() -> App<'a, 'b> {
-    let app = App::new("central")
+    App::new("central")
         .author(crate_authors!("\n"))
         .version(crate_version!())
-        .about("A Murillo Management System");
+        .about("A Murillo Management System")
+        .subcommand(generate_connect())
+}
 
-    app
+#[allow(deprecated)]
+fn generate_connect<'a, 'b>() -> App<'a, 'b> {
+    SubCommand::with_name("connect")
+        .author(crate_authors!("\n"))
+        .version(crate_version!())
+        .about("Connect to central station to send ad-hoc messages")
+        .arg(
+            Arg::with_name("interactive")
+                .short("i")
+                .takes_value(false)
+                .required(true)
+                .help("Starts the connection in interactive mode"),
+        )
+        .arg(
+            Arg::with_name("message")
+                .short("m")
+                .takes_value(true)
+                .required(true)
+                .conflicts_with("interactive")
+                .help("Sends a single message and closes the connection"),
+        )
 }
 
 #[cfg(test)]

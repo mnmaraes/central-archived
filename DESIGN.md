@@ -89,7 +89,8 @@ Clearing the [context](#dec-15th) due to the arch redo.
 *Context*
 1. [ ] Build IPC framework
   1. [ ] Establish connection between `station` and clients
-      - [x] Await connections from `central_station`
+      - [x] Await connections from `central_lslls
+      - tation`
       - [ ] Connect from `central_cli`
       - [ ] Send messages from `central_cli`
   1. [ ] Wrap Events
