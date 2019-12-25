@@ -7,6 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bytes = "0.5.3"
 clap = "2.33.0"
 tokio = { version = "0.2.4", features = ["full"] }
 central_pm = { path = "../central_pm" }

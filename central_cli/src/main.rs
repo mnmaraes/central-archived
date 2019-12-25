@@ -11,6 +11,8 @@ fn main() {
     let matches = cli::get_cli_matches();
 
     if let Some(runner) = Connect::matches(matches) {
-        runner.run()
+        runner
+            .run()
+            .expect("Error while running subcommand connect");
     }
 }

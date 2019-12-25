@@ -81,6 +81,7 @@ dependencies = [
 name = "central_cli"
 version = "0.1.0"
 dependencies = [
+ "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "central_pm 0.1.0",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pg 0.1.0",

@@ -1,33 +1,11 @@
+use std::io;
+
 use clap::{crate_authors, crate_version, App, Arg, ArgMatches, SubCommand};
 
 pub struct Connect {}
 
-pub enum ConnectRunner {
-    Interactive,
-    Message(String),
-}
-
-impl ConnectRunner {
-    pub fn run(&self) {
-        match self {
-            Self::Interactive => println!("TODO: Interactive Mode"),
-            Self::Message(m) => println!("TODO: Message: {}", m),
-        };
-    }
-}
-
-impl<'a> From<&ArgMatches<'a>> for ConnectRunner {
-    fn from(arg_matches: &ArgMatches<'a>) -> ConnectRunner {
-        if arg_matches.is_present("interactive") {
-            return ConnectRunner::Interactive;
-        }
-
-        return ConnectRunner::Message(String::from(arg_matches.value_of("message").unwrap()));
-    }
-}
-
 impl Connect {
-    pub fn matches<'a, 'b>(arg_matches: ArgMatches<'a>) -> Option<ConnectRunner> {
+    pub fn matches(arg_matches: ArgMatches) -> Option<ConnectRunner> {
         if let Some(sub_matches) = arg_matches.subcommand_matches("connect") {
             return Some(ConnectRunner::from(sub_matches));
         }
@@ -55,5 +33,72 @@ impl Connect {
                     .conflicts_with("interactive")
                     .help("Sends a single message and closes the connection"),
             )
+    }
+}
+
+pub enum ConnectRunner {
+    Interactive,
+    Message(String),
+}
+
+impl ConnectRunner {
+    pub fn run(&self) -> io::Result<()> {
+        match self {
+            Self::Interactive => self.run_interactive(),
+            Self::Message(_) => self.run_message(),
+        }
+    }
+}
+
+impl ConnectRunner {
+    #[tokio::main]
+    async fn run_message(&self) -> io::Result<()> {
+        use bytes::Bytes;
+        use tokio::net::UnixStream;
+        use tokio::prelude::*;
+
+        // 1. Connect to running instance of `central_station`
+        //  - Get Socket Address
+        let home = std::env::var("HOME").map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        let addr = format!("{}/.central/tmp/.modules", home);
+
+        let mut client = UnixStream::connect(addr).await.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+
+        // 2. Send stored message!
+        let message = self.message_value().expect("Invariant Violation: Running message passing mode when no message is present");
+        let mut buffer = Bytes::from(message);
+
+        let mut written = 0;
+        while written < buffer.len() {
+            match client.write_buf(&mut buffer).await {
+                Ok(n) => {
+                    written += n;
+                },
+                Err(e) => return Err(io::Error::new(io::ErrorKind::Other, e))
+            };
+        }
+
+        Ok(())
+    }
+
+    fn run_interactive(&self) -> io::Result<()> {
+        unimplemented!()
+    }
+
+    fn message_value(&self) -> Option<String> {
+        match self {
+            Self::Message(m) => Some(m.clone()),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> From<&ArgMatches<'a>> for ConnectRunner {
+    fn from(arg_matches: &ArgMatches<'a>) -> ConnectRunner {
+        if arg_matches.is_present("interactive") {
+            return ConnectRunner::Interactive;
+        }
+
+        ConnectRunner::Message(String::from(arg_matches.value_of("message").unwrap()))
     }
 }
