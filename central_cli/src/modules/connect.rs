@@ -1,6 +1,12 @@
 use std::io;
+use std::io::prelude::*;
+
+use bytes::Bytes;
 
 use clap::{crate_authors, crate_version, App, Arg, ArgMatches, SubCommand};
+
+use tokio::net::UnixStream;
+use tokio::prelude::*;
 
 pub struct Connect {}
 
@@ -53,10 +59,6 @@ impl ConnectRunner {
 impl ConnectRunner {
     #[tokio::main]
     async fn run_message(&self) -> io::Result<()> {
-        use bytes::Bytes;
-        use tokio::net::UnixStream;
-        use tokio::prelude::*;
-
         // 1. Connect to running instance of `central_station`
         //  - Get Socket Address
         let home = std::env::var("HOME").map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
@@ -81,8 +83,37 @@ impl ConnectRunner {
         Ok(())
     }
 
-    fn run_interactive(&self) -> io::Result<()> {
-        unimplemented!()
+    #[tokio::main]
+    async fn run_interactive(&self) -> io::Result<()> {
+        // 1. Connect to running instance of `central_station`
+        //  - Get Socket Address
+        let home = std::env::var("HOME").map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        let addr = format!("{}/.central/tmp/.modules", home);
+
+        let mut client = UnixStream::connect(addr).await.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+
+        // 2. Send stored message!
+        loop {
+            print!("=> ");
+            io::stdout().flush().expect("Error flushing stdout. What's up with that?");
+
+            let mut message = String::new();
+            io::stdin().read_line(&mut message)
+                .expect("Error reading line from stdin");
+            message = message.trim_end_matches('\n').to_string();
+
+            let mut buffer = Bytes::from(message);
+
+            let mut written = 0;
+            while written < buffer.len() {
+                match client.write_buf(&mut buffer).await {
+                    Ok(n) => {
+                        written += n;
+                    },
+                    Err(e) => return Err(io::Error::new(io::ErrorKind::Other, e))
+                };
+            }
+        }
     }
 
     fn message_value(&self) -> Option<String> {
