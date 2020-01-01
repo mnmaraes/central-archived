@@ -3,5 +3,6 @@ members = [
   "central_station",
   "central_cli",
   "central_pm",
+  "cliff",
   "storage/pg",
 ]

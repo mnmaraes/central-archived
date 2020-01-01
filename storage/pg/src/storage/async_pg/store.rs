@@ -1,4 +1,4 @@
-use tokio_postgres::{ NoTls, Transaction, Error };
+use tokio_postgres::{ NoTls };
 use dotenv::dotenv;
 use std::env::var;
 
