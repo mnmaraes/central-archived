@@ -1,6 +1,7 @@
 mod parsing;
+pub mod runtime;
 
-use std::env;
+use std::{env, fs, io::ErrorKind};
 
 use bytes::Bytes;
 
@@ -10,7 +11,7 @@ use futures::stream::StreamExt;
 
 use rmpv;
 
-use tokio::net::{TcpListener, UnixListener, UnixStream};
+use tokio::net::{UnixListener, UnixStream};
 use tokio::prelude::*;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
@@ -18,16 +19,14 @@ use parsing::{encode_value, MsgPackParser};
 
 // Server/Client
 pub fn create_server() -> Result<UnboundedReceiver<rmpv::Value>, Error> {
+    // TODO: Set up connection closing on close
     // 0. Set up
     let (tx, rx) = unbounded_channel();
 
     // 1. Set up Unix listener
-    let mut unix_listener: UnixListener =
-        open_uds_listener().context("Failed to open Unix Listener")?;
+    let mut unix_listener = open_uds_listener().context("Failed to open Unix Listener")?;
 
     tokio::spawn({
-        let tx = tx.clone();
-
         async move {
             // TODO: Handle Errors in here
             loop {
@@ -49,12 +48,25 @@ pub fn create_server() -> Result<UnboundedReceiver<rmpv::Value>, Error> {
             }
         }
     });
-    // 2. Set up Tcp listener
-    //let tcp_listener = Self::open_tcp_listener()
-    //.context("Failed to open Tcp Listener")?;
 
     // 3. Merge message streams
     Ok(rx)
+}
+
+fn open_uds_listener() -> Result<UnixListener, Error> {
+    let path = get_uds_path()?;
+    match UnixListener::bind(&path) {
+        Ok(l) => Ok(l),
+        Err(e) if e.kind() == ErrorKind::AddrInUse => {
+            // 1. Handle cases where file exists
+            // TODO: Handle it more gracefully (Ask user whether to force or abort)
+            println!("A connection file already exists. Removing it.");
+            fs::remove_file(&path)?;
+
+            UnixListener::bind(&path).map_err(Error::from)
+        }
+        Err(e) => return Err(Error::from(e)),
+    }
 }
 
 pub async fn create_client() -> Result<UnboundedSender<rmpv::Value>, Error> {
@@ -93,30 +105,7 @@ pub async fn create_client() -> Result<UnboundedSender<rmpv::Value>, Error> {
     Ok(tx)
 }
 
-fn open_tcp_listener() -> Result<TcpListener, Error> {
-    // 1. Handle cases where port is already in use
-    // 2. Set up connection closing on close
-    unimplemented!()
-}
-
-fn open_uds_listener() -> Result<UnixListener, Error> {
-    // TODO
-    let path = get_uds_path()?;
-    // 1. Handle cases where file exists
-    // 2. Set up connection closing on close
-    // 3. Return Listener
-    UnixListener::bind(path).map_err(Error::from)
-}
-
 fn get_uds_path() -> Result<String, Error> {
     let home = env::var("HOME").context("Couldn't retrieve HOME env var")?;
     Ok(format!("{}/.central/.sock", home))
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 }

@@ -14,8 +14,8 @@ async fn main() -> Result<(), Error> {
     // 1. Set up Server
     let server = cliff::create_server()?;
 
-    let num_clients = 10;
-    let num_guesses = 5000000;
+    let num_clients = 25;
+    let num_guesses = 5000;
 
     // TODO: Spawn server and clients on different threads
     let results = server
@@ -39,7 +39,7 @@ async fn main() -> Result<(), Error> {
                         (Some(id), Some(guess)) => {
                             //println!("{}: client {} guessed {}", i, *id, guess);
                             if *guess == wining_number {
-                                //println!("Guess from {} is a winner!", id);
+                                println!("Guess from {} is a winner!", id);
                                 Some(id.to_owned())
                             } else {
                                 None
