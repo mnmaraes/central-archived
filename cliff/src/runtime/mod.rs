@@ -29,6 +29,7 @@ pub struct Handle<T>(mpsc::UnboundedReceiver<Box<dyn Handled<T> + Send>>);
 pub struct Address<T>(mpsc::UnboundedSender<Box<dyn Handled<T> + Send>>);
 impl<T> Address<T> {
     pub fn send<M: Handled<T> + Send + Sync + 'static>(&self, message: M) {
+        // TODO: Better Error Handling
         self.0.send(Box::new(message)).ok();
     }
 }
@@ -62,6 +63,7 @@ fn dispatch<T: Default + Send + 'static>(mut handle: Handle<T>) {
     tokio::spawn(async move {
         let mut dispatched = T::default();
         loop {
+            // TODO: Better error handling
             let message = handle.0.next().await.unwrap();
             message.be_handled(&mut dispatched);
         }

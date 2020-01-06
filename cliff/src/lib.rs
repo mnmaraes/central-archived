@@ -65,7 +65,7 @@ fn open_uds_listener() -> Result<UnixListener, Error> {
 
             UnixListener::bind(&path).map_err(Error::from)
         }
-        Err(e) => return Err(Error::from(e)),
+        Err(e) => Err(Error::from(e)),
     }
 }
 
@@ -76,28 +76,18 @@ pub async fn create_client() -> Result<UnboundedSender<rmpv::Value>, Error> {
     let mut stream = UnixStream::connect(addr).await?;
 
     tokio::spawn(async move {
-        loop {
-            let message = match rx.recv().await {
-                Some(m) => m,
-                None => {
-                    break;
-                }
-            };
-
+        while let Some(message) = rx.recv().await {
             let encoded = encode_value(&message);
             let mut buffer = Bytes::from(encoded);
 
-            while buffer.len() > 0 {
-                match stream.write_buf(&mut buffer).await {
-                    Err(e) => {
-                        println!("Sending error: {}", e);
-                        println!(
-                            "Trying to send message: {}",
-                            String::from_utf8(buffer.to_vec()).unwrap()
-                        );
-                    }
-                    _ => {}
-                };
+            while !buffer.is_empty() {
+                if let Err(e) = stream.write_buf(&mut buffer).await {
+                    println!("Sending error: {}", e);
+                    println!(
+                        "Trying to send message: {}",
+                        String::from_utf8(buffer.to_vec()).unwrap()
+                    );
+                }
             }
         }
     });
