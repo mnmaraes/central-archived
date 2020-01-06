@@ -2,8 +2,6 @@ use std::ops::Deref;
 
 use tokio::sync::mpsc;
 
-use futures::stream::StreamExt;
-
 // Runtime
 pub trait Message {}
 
@@ -62,9 +60,7 @@ impl<T: Default + Send + 'static> Runtime<T> {
 fn dispatch<T: Default + Send + 'static>(mut handle: Handle<T>) {
     tokio::spawn(async move {
         let mut dispatched = T::default();
-        loop {
-            // TODO: Better error handling
-            let message = handle.0.next().await.unwrap();
+        while let Some(message) = handle.0.recv().await {
             message.be_handled(&mut dispatched);
         }
     });

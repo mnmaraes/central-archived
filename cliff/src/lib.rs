@@ -17,6 +17,11 @@ use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 use parsing::{encode_value, MsgPackParser};
 
+// TODO: Refactor Server Creation to leverage Actor model
+pub fn new_create_server() -> Result<(), Error> {
+    Ok(())
+}
+
 // Server/Client
 pub fn create_server() -> Result<UnboundedReceiver<rmpv::Value>, Error> {
     // TODO: Set up connection closing on close
@@ -49,7 +54,7 @@ pub fn create_server() -> Result<UnboundedReceiver<rmpv::Value>, Error> {
         }
     });
 
-    // 3. Merge message streams
+    // 2. Return message streams
     Ok(rx)
 }
 
