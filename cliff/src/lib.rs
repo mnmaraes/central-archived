@@ -17,9 +17,56 @@ use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 use parsing::{encode_value, MsgPackParser};
 
-// TODO: Refactor Server Creation to leverage Actor model
-pub fn new_create_server() -> Result<(), Error> {
-    Ok(())
+use runtime::{Handler, Message, Runtime, SelfStarter};
+
+pub struct UnixConnection(Option<UnixStream>);
+impl Message for UnixConnection {}
+
+impl UnixConnection {
+    pub fn take_socket(&mut self) -> Option<UnixStream> {
+        self.0.take()
+    }
+}
+
+pub trait UnixServer: Sized {
+    fn serve() -> Runtime<Self>;
+}
+
+impl<T: Handler<UnixConnection> + Default + Send + 'static> UnixServer for T {
+    fn serve() -> Runtime<T> {
+        let runtime = T::start();
+
+        listen(&runtime);
+
+        runtime
+    }
+}
+
+fn listen<T: Handler<UnixConnection> + Default + Send + 'static>(runtime: &Runtime<T>) {
+    let mut listener = open_uds_listener()
+        .context("Failed to open Unix Listener")
+        .unwrap();
+    let cloned = runtime.clone();
+
+    tokio::spawn(async move {
+        let new_conn_stream = listener
+            .incoming()
+            .filter_map(|r: Result<_, _>| async { r.ok() })
+            .then(|mut socket| {
+                async move {
+                    let (stream, _) = socket.split();
+
+                    // TODO: Parse and Consume messages here
+
+                    UnixConnection(Some(socket))
+                }
+            });
+        let mut pinned = Box::pin(new_conn_stream);
+
+        while let Some(m) = pinned.next().await {
+            cloned.send(m);
+        }
+    });
 }
 
 // Server/Client

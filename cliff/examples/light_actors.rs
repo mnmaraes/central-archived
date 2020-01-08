@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
-use cliff::runtime::{Handler, Message, SelfStarter};
+use cliff::runtime::{Handler, Message};
+use cliff::{UnixConnection, UnixServer};
 
 // Cat Shelter
 // Data
@@ -44,14 +45,25 @@ struct Server {
     subscribers: HashSet<usize>,
 }
 
+impl Handler<UnixConnection> for Server {
+    fn handle(&mut self, message: &mut UnixConnection) {
+        let mut socket = match message.take_socket() {
+            Some(s) => s,
+            None => return,
+        };
+        // TODO: Implement and store connection's read side
+        unimplemented!()
+    }
+}
+
 impl Handler<Subscribe> for Server {
-    fn handle(&mut self, message: &Subscribe) {
+    fn handle(&mut self, message: &mut Subscribe) {
         self.subscribers.insert(message.0);
     }
 }
 
 impl Handler<Unsubscribe> for Server {
-    fn handle(&mut self, message: &Unsubscribe) {
+    fn handle(&mut self, message: &mut Unsubscribe) {
         self.subscribers.remove(&message.0);
     }
 }
@@ -59,7 +71,7 @@ impl Handler<Unsubscribe> for Server {
 #[tokio::main]
 async fn main() {
     // Spawn Server
-    let runtime = Server::start();
+    let runtime = Server::serve();
 
     // Example Message Sending
     runtime.send(Subscribe(2));

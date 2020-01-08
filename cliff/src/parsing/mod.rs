@@ -121,10 +121,6 @@ fn get_value_size(buffer: &[u8]) -> Option<usize> {
     }
 }
 
-trait Parser {
-    type Parsed;
-}
-
 pub struct MsgPackParser<R: tokio::io::AsyncRead + std::marker::Unpin> {
     _reader: R,
 
@@ -141,7 +137,7 @@ impl<R: tokio::io::AsyncRead + std::marker::Unpin> MsgPackParser<R> {
     }
 
     fn parse_next(&self, buffer: &[u8]) -> Result<(Option<rmpv::Value>, Vec<u8>), Error> {
-        if buffer.len() == 0 {
+        if buffer.is_empty() {
             return Ok((None, vec![]));
         }
 
