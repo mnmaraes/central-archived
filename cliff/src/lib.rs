@@ -52,21 +52,24 @@ fn listen<T: Handler<UnixConnection> + Default + Send + 'static>(runtime: &Runti
         let new_conn_stream = listener
             .incoming()
             .filter_map(|r: Result<_, _>| async { r.ok() })
-            .then(|mut socket| {
-                async move {
-                    let (stream, _) = socket.split();
-
-                    // TODO: Parse and Consume messages here
-
-                    UnixConnection(Some(socket))
-                }
-            });
+            .then(|socket| forward_parsed(&cloned, socket));
         let mut pinned = Box::pin(new_conn_stream);
 
         while let Some(m) = pinned.next().await {
             cloned.send(m);
         }
     });
+}
+
+async fn forward_parsed<T: Handler<UnixConnection> + Default + Send + 'static>(
+    runtime: &Runtime<T>,
+    mut socket: UnixStream,
+) -> UnixConnection {
+    let (stream, _) = socket.split();
+
+    // TODO: Parse and Consume messages here
+
+    UnixConnection(Some(socket))
 }
 
 // Server/Client
