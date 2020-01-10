@@ -65,11 +65,24 @@ async fn forward_parsed<T: Handler<UnixConnection> + Default + Send + 'static>(
     runtime: &Runtime<T>,
     mut socket: UnixStream,
 ) -> UnixConnection {
-    let (stream, _) = socket.split();
+    tokio::spawn(async move {
+        // TODO: Handle the Write side of this equation.
+        // Need to figure out how to work with stream and subject
+        // separately and the borrow/lifetime implications
+        let (stream, subject) = socket.split();
 
-    // TODO: Parse and Consume messages here
+        // TODO: Probably not the parser we actually want
+        // Ideally we'd be working with a message parser
+        let mut parser = MsgPackParser::new(stream);
 
-    UnixConnection(Some(socket))
+        while let Some(value) = parser.next().await {
+            //TODO: Do Something with the value
+        }
+    });
+
+    // TODO: Figure out what we're actually returning here
+    // Most likely a channel subject
+    UnixConnection(None)
 }
 
 // Server/Client
