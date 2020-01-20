@@ -8,12 +8,14 @@ use syn::{parse_macro_input, DeriveInput};
 #[proc_macro_derive(Message)]
 pub fn message_macro(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
+
     let name = input.ident;
+    let as_str = name.to_string();
 
     let expanded = quote! {
         impl Message for #name {
             fn message_type(&self) -> String {
-                "#name".to_string()
+                #as_str.to_string()
             }
         }
     };
