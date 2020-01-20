@@ -1,7 +1,14 @@
+mod codec;
 mod parsing;
 pub mod runtime;
 
-use std::{env, fs, io::ErrorKind};
+pub use cliff_derive::*;
+
+use std::{
+    env, fs,
+    io::ErrorKind,
+    sync::{Arc, Mutex},
+};
 
 use bytes::Bytes;
 
@@ -11,16 +18,26 @@ use futures::stream::StreamExt;
 
 use rmpv;
 
-use tokio::net::{UnixListener, UnixStream};
+use tokio::net::{
+    unix::{ReadHalf, WriteHalf},
+    UnixListener, UnixStream,
+};
 use tokio::prelude::*;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
+use tokio_util::codec::Framed;
+
 use parsing::{encode_value, MsgPackParser};
 
-use runtime::{Handler, Message, Runtime, SelfStarter};
+pub use runtime::{Handler, Message};
+use runtime::{Runtime, SelfStarter};
 
 pub struct UnixConnection(Option<UnixStream>);
-impl Message for UnixConnection {}
+impl Message for UnixConnection {
+    fn message_type(&self) -> String {
+        "UnixConnection".to_string()
+    }
+}
 
 impl UnixConnection {
     pub fn take_socket(&mut self) -> Option<UnixStream> {
@@ -53,8 +70,8 @@ fn listen<T: Handler<UnixConnection> + Default + Send + 'static>(runtime: &Runti
             .incoming()
             .filter_map(|r: Result<_, _>| async { r.ok() })
             .then(|socket| forward_parsed(&cloned, socket));
-        let mut pinned = Box::pin(new_conn_stream);
 
+        let mut pinned = Box::pin(new_conn_stream);
         while let Some(m) = pinned.next().await {
             cloned.send(m);
         }
@@ -65,23 +82,31 @@ async fn forward_parsed<T: Handler<UnixConnection> + Default + Send + 'static>(
     runtime: &Runtime<T>,
     mut socket: UnixStream,
 ) -> UnixConnection {
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
     tokio::spawn(async move {
         // TODO: Handle the Write side of this equation.
         // Need to figure out how to work with stream and subject
         // separately and the borrow/lifetime implications
-        let (stream, subject) = socket.split();
+        // NOTE: Trying to split these into different threads tends not to work out
+        // It'd be better to have a wrapping struct that owns the socket
+        // and manages the task splitting
+        // Seems like an answer: https://docs.rs/tokio-util/0.2.0/tokio_util/codec/struct.Framed.html
+        // As seen in: https://github.com/tokio-rs/tokio/issues/1840
+        // Also: https://docs.rs/futures-preview/0.3.0-alpha.19/futures/macro.select.html
+        let framed = Framed::new(socket, codec::MsgPackCodec {});
 
+        let (subject, mut stream) = framed.split();
+        let forwarded = rx.forward(subject);
+
+        tokio::spawn(forwarded);
         // TODO: Probably not the parser we actually want
         // Ideally we'd be working with a message parser
-        let mut parser = MsgPackParser::new(stream);
-
-        while let Some(value) = parser.next().await {
-            //TODO: Do Something with the value
-        }
+        if let Some(Ok(next)) = stream.next().await {
+            // TODO: Parse Message
+        };
     });
 
-    // TODO: Figure out what we're actually returning here
-    // Most likely a channel subject
+    // TODO: Return tx here
     UnixConnection(None)
 }
 

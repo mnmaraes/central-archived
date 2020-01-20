@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
-use cliff::runtime::{Handler, Message};
-use cliff::{UnixConnection, UnixServer};
+use cliff::{Handler, Message, UnixConnection, UnixServer};
 
 // Cat Shelter
 // Data
@@ -13,14 +12,14 @@ struct Cat {
 }
 
 // Client Messages
+#[derive(Message)]
 struct Subscribe(usize);
-impl Message for Subscribe {}
 
+#[derive(Message)]
 struct Unsubscribe(usize);
-impl Message for Unsubscribe {}
 
+#[derive(Message)]
 struct Boogey {}
-impl Message for Boogey {}
 //enum ClientMessage {
 //Subscribe,
 //Unsubscribe,
@@ -30,10 +29,11 @@ impl Message for Boogey {}
 //}
 
 // Responses
+#[derive(Message)]
 struct Synchronize(Vec<Cat>);
-impl Message for Synchronize {}
+
+#[derive(Message)]
 struct Update(Cat);
-impl Message for Update {}
 //enum ServerMessage {
 //Synch(Vec<Cat>),
 //Update(Cat),
@@ -47,10 +47,6 @@ struct Server {
 
 impl Handler<UnixConnection> for Server {
     fn handle(&mut self, message: &mut UnixConnection) {
-        let mut socket = match message.take_socket() {
-            Some(s) => s,
-            None => return,
-        };
         // TODO: Implement and store connection's read side
         unimplemented!()
     }
@@ -82,6 +78,6 @@ async fn main() {
     // Spawn Clients
     // tokio::spawn(async {});
 
-    tokio::signal::ctrl_c().await.ok();
-    println!("Sutting down gracefully");
+    //tokio::signal::ctrl_c().await.ok();
+    println!("Shutting down gracefully");
 }

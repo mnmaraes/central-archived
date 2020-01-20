@@ -3,7 +3,9 @@ use std::ops::Deref;
 use tokio::sync::mpsc;
 
 // Runtime
-pub trait Message {}
+pub trait Message {
+    fn message_type(&self) -> String;
+}
 
 pub trait Handler<M: Message> {
     fn handle(&mut self, message: &mut M);

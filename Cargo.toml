@@ -4,5 +4,6 @@ members = [
   "central_cli",
   "central_pm",
   "cliff",
+  "cliff_derive",
   "storage/pg",
 ]

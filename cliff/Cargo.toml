@@ -8,8 +8,10 @@ edition = "2018"
 
 [dependencies]
 tokio = { version="0.2.6", features=["full"] }
+tokio-util = { version="0.2.0", features=["codec"] }
 bytes = "0.5.3"
 futures = "0.3.1"
 failure = "0.1.6"
 rand = "0.7.2"
 rmpv = "0.4.2"
+cliff_derive = { path ="../cliff_derive" }
