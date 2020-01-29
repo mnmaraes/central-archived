@@ -2,21 +2,15 @@
 
 Well, I wanted to learn rust. So let's build a thing!
 
-## Roadmap
+- [Roadmap](project/roadmap.md)
 
-*Done*:
-- [x] Set up
-  - [x] Get tests running
-  - [x] Add Commit
+## What it is
 
-*Next Goals*:
-- [ ] CLI
-  - [ ] Create Projects
-  - [ ] Add Tasks to Projects
-  - [ ] See Project Status
+### Note based productivity framework
 
-*Backlog*:
-- [ ] Rituals
+Using notes to keep information organized and accessible,
+while allowing for the chaos of creativity
 
-*Long Term*:
-- [ ] Take over the world!
+#### References
+
+1. [Productivity for special snowflakes](https://www.ribbonfarm.com/2016/01/28/productivity-for-precious-snowflakes/)

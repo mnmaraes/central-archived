@@ -1,11 +1,11 @@
 use std::ops::Deref;
 
+use serde::{Deserialize, Serialize};
+
 use tokio::sync::mpsc;
 
 // Runtime
-pub trait Message {
-    fn message_type(&self) -> String;
-}
+pub trait Message: Send + Sync {}
 
 pub trait Handler<M: Message> {
     fn handle(&mut self, message: &mut M);
@@ -13,14 +13,19 @@ pub trait Handler<M: Message> {
 
 pub trait Handled<T>: Message {
     fn be_handled(&mut self, actor: &mut T);
+    fn be_forwaded(self: Box<Self>, runtime: &Runtime<T>);
 }
 
-impl<T, M: Message> Handled<T> for M
+impl<T: Default + Send + 'static, M: Message + 'static> Handled<T> for M
 where
     T: Handler<M>,
 {
     fn be_handled(&mut self, actor: &mut T) {
         actor.handle(self);
+    }
+
+    fn be_forwaded(self: Box<Self>, runtime: &Runtime<T>) {
+        runtime.forward(self)
     }
 }
 
@@ -31,6 +36,10 @@ impl<T> Address<T> {
     pub fn send<M: Handled<T> + Send + Sync + 'static>(&self, message: M) {
         // TODO: Better Error Handling
         self.0.send(Box::new(message)).ok();
+    }
+
+    pub fn forward<M: Handled<T> + Send + Sync + 'static>(&self, message: Box<M>) {
+        self.0.send(message).ok();
     }
 }
 

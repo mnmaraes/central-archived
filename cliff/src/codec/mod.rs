@@ -1,14 +1,12 @@
-use std::{pin::Pin, task::Poll};
-
 use tokio_util::codec::{Decoder, Encoder};
 
 use bytes::{buf::*, BytesMut};
 
 use failure::{Error, ResultExt};
 
-use futures::stream::Stream;
-
 use rmpv::{self, decode::value::read_value, encode::write_value};
+
+pub trait Protocol {}
 
 pub struct MsgPackCodec {}
 

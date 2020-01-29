@@ -4,7 +4,8 @@
 
 [Next Session](#session-2)
 
-*TODOs*:
+_TODOs_:
+
 - [x] Create Projects
 - [ ] Store Projects
 - [ ] List Stored Projects
@@ -18,6 +19,7 @@
 ##### Create Projects
 
 A project needs (on a high level):
+
 - A name
 - An optional description
 
@@ -32,6 +34,7 @@ The CLI module can define a Trait, that the Project Management module's Structs 
 Trait conformance can be built separatly from each struct and can be the job of a Mastro module.
 
 Which leads us to the roadmap:
+
 1. [ ] Implement PM module's functionality
 1. [ ] Define CLI module's traits
 1. [ ] Implement CLI traits on PM Structs
@@ -55,7 +58,7 @@ So next thing todo:
 
 In a proper Murillo fashion, I'm rethinking the storage decision mid implementation.
 `csv` is a limited format for what we're doing.
-Why not use a proper database? 
+Why not use a proper database?
 Doesn't have to be something large scale or scalable or super duper.
 It just has to work and be somewhat portable.
 It seems to me that SQLLite fits all of that.
@@ -75,10 +78,10 @@ It's not just the code that needs to be decentralized.
 The whole functioning of the system needs to be distributed across different processes.
 
 This makes things fun, as I'll get to do some IPC.
-Given the event driven architecture I have in mind, 
+Given the event driven architecture I have in mind,
 it seems that sockets would be the right way to communicate between processes.
 Also thought about shared memory,
-and although it really wouldn't work for events 
+and although it really wouldn't work for events
 (because of its passive read/write nature),
 we might still use it for managed models in the future.
 
@@ -86,24 +89,24 @@ Still need to play around with both,
 to make sure I can build a robust framework on top of rust primitives.
 Clearing the [context](#dec-15th) due to the arch redo.
 
-*Context*
-1. [ ] Build IPC framework
-  1. [ ] Establish connection between `station` and clients
-      - [x] Await connections from `central_lslls
-      - tation`
-      - [ ] Connect from `central_cli`
-      - [ ] Send messages from `central_cli`
-  1. [ ] Wrap Events
+_Context_
 
+1. [ ] Build IPC framework
+1. [ ] Establish connection between `station` and clients
+   - [x] Await connections from `central_lslls
+   - tation`
+   - [ ] Connect from `central_cli`
+   - [ ] Send messages from `central_cli`
+1. [ ] Wrap Events
 
 ## CLI
 
 - [x] CLI Argument Parsing
-Quick solution: 'clap'
+      Quick solution: 'clap'
 
 Alright. Seems to work well enough
 
-NOTE: Holy shit! Rust lifetimes are magic... 
+NOTE: Holy shit! Rust lifetimes are magic...
 They really, really just work (tm).
 And here I was thinking they'd be super hard to reason around, or very complex to use...
 Nope!
@@ -112,14 +115,14 @@ Nope!
 
 ### Dec 15th
 
-*Context:*
+_Context:_
 
 1. [x] Add Clippy to your project
 1. [ ] Define and implement our storage engine
 1. [ ] Implement PM module's functionality
-    - [ ] Store Projects
-    - [ ] List Stored Projects
-    - [ ] Add Tasks to existing projects
-    - [ ] Follow Project Progress
+   - [ ] Store Projects
+   - [ ] List Stored Projects
+   - [ ] Add Tasks to existing projects
+   - [ ] Follow Project Progress
 1. [ ] Define CLI module's traits
 1. [ ] Implement CLI traits on PM Structs

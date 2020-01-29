@@ -4,13 +4,9 @@ pub mod runtime;
 
 pub use cliff_derive::*;
 
-use std::{
-    env, fs,
-    io::ErrorKind,
-    sync::{Arc, Mutex},
-};
+use std::{env, fs, io::ErrorKind};
 
-use bytes::Bytes;
+use bytes::{buf::*, Bytes, BytesMut};
 
 use failure::{Error, ResultExt};
 
@@ -18,10 +14,11 @@ use futures::stream::StreamExt;
 
 use rmpv;
 
-use tokio::net::{
-    unix::{ReadHalf, WriteHalf},
-    UnixListener, UnixStream,
-};
+use serde::{Deserialize, Serialize};
+
+use tokio_util::codec::{Decoder, Encoder};
+
+use tokio::net::{UnixListener, UnixStream};
 use tokio::prelude::*;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
@@ -29,15 +26,35 @@ use tokio_util::codec::Framed;
 
 use parsing::{encode_value, MsgPackParser};
 
+use runtime::{Handled, Runtime, SelfStarter};
 pub use runtime::{Handler, Message};
-use runtime::{Runtime, SelfStarter};
 
-pub struct UnixConnection(Option<UnixStream>);
-impl Message for UnixConnection {
-    fn message_type(&self) -> String {
-        "UnixConnection".to_string()
+// TODO: Compolete Message Parsing
+pub struct MessageCodec<C: Encoder + Decoder, T> {
+    raw_codec: C,
+    runtime: Runtime<T>,
+}
+
+impl<C: Encoder + Decoder, T> Encoder for MessageCodec<C, T> {
+    type Item = Box<dyn Handled<T>>;
+    type Error = Error;
+
+    fn encode(&mut self, item: Box<dyn Handled<T>>, dst: &mut BytesMut) -> Result<(), Error> {
+        unimplemented!()
     }
 }
+
+impl<C: Encoder + Decoder, T> Decoder for MessageCodec<C, T> {
+    type Item = Box<dyn Handled<T>>;
+    type Error = Error;
+
+    fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Box<dyn Handled<T>>>, Error> {
+        unimplemented!()
+    }
+}
+
+pub struct UnixConnection(Option<UnixStream>);
+impl Message for UnixConnection {}
 
 impl UnixConnection {
     pub fn take_socket(&mut self) -> Option<UnixStream> {
@@ -80,9 +97,11 @@ fn listen<T: Handler<UnixConnection> + Default + Send + 'static>(runtime: &Runti
 
 async fn forward_parsed<T: Handler<UnixConnection> + Default + Send + 'static>(
     runtime: &Runtime<T>,
-    mut socket: UnixStream,
+    socket: UnixStream,
 ) -> UnixConnection {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+    let runtime = runtime.clone();
+
     tokio::spawn(async move {
         // TODO: Handle the Write side of this equation.
         // Need to figure out how to work with stream and subject
@@ -93,16 +112,20 @@ async fn forward_parsed<T: Handler<UnixConnection> + Default + Send + 'static>(
         // Seems like an answer: https://docs.rs/tokio-util/0.2.0/tokio_util/codec/struct.Framed.html
         // As seen in: https://github.com/tokio-rs/tokio/issues/1840
         // Also: https://docs.rs/futures-preview/0.3.0-alpha.19/futures/macro.select.html
-        let framed = Framed::new(socket, codec::MsgPackCodec {});
+        let framed = Framed::new(
+            socket,
+            MessageCodec {
+                raw_codec: codec::MsgPackCodec {},
+                runtime: runtime.clone(),
+            },
+        );
 
         let (subject, mut stream) = framed.split();
         let forwarded = rx.forward(subject);
 
         tokio::spawn(forwarded);
-        // TODO: Probably not the parser we actually want
-        // Ideally we'd be working with a message parser
         if let Some(Ok(next)) = stream.next().await {
-            // TODO: Parse Message
+            next.be_forwaded(&runtime)
         };
     });
 

@@ -12,14 +12,14 @@ struct Cat {
 }
 
 // Client Messages
-#[derive(Message)]
 struct Subscribe(usize);
+impl Message for Subscribe {}
 
-#[derive(Message)]
 struct Unsubscribe(usize);
+impl Message for Unsubscribe {}
 
-#[derive(Message)]
 struct Boogey {}
+impl Message for Boogey {}
 //enum ClientMessage {
 //Subscribe,
 //Unsubscribe,
@@ -29,11 +29,11 @@ struct Boogey {}
 //}
 
 // Responses
-#[derive(Message)]
 struct Synchronize(Vec<Cat>);
+impl Message for Synchronize {}
 
-#[derive(Message)]
 struct Update(Cat);
+impl Message for Update {}
 //enum ServerMessage {
 //Synch(Vec<Cat>),
 //Update(Cat),
